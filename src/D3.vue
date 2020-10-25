@@ -31,8 +31,8 @@ export default {
     }
   },
   mounted() {
-    this.generateChart();
-    // this.generateChart2();
+    // this.generateChart();
+    this.generateChart2();
   },
   methods: {
     async generateChart() {
@@ -135,6 +135,15 @@ export default {
           .attr("stroke-width", (d, i) => i % 5 ? 0.25 : 1)
           .attr("d", d3.geoPath());
 
+      let tooltip = d3.select("body")
+          .append("div")
+          .style("class", "align-center")
+          .style("position", "absolute")
+          .style("z-index", "10")
+          .style("visibility", "hidden")
+          .style("background", "#699")
+          .text("");
+
       svg.append("g")
           .attr("stroke", "white")
           .selectAll("circle")
@@ -142,7 +151,13 @@ export default {
           .enter().append("circle")
           .attr("cx", d => x(d.x))
           .attr("cy", d => y(d.y))
-          .attr("r", 2);
+          .attr("r", 2)
+      .on("mouseover", function (d) {
+        tooltip.html("You clicked at point (" + d.x + "," + d.y + "). Visit <a href='/'>details</a>")
+            .style("top", (d.y-10)+"px").style("left",(d.x+10)+"px");
+        return tooltip.style('visibility', 'visible');
+      })
+      ;
     }
   }
 }
