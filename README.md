@@ -1,24 +1,14 @@
-# vue-d3js
+# VueJS and D3.js
 
-## Project setup
-```
-yarn install
-```
+Simple examples to learn about D3.js (business data) with VueJs.
+VueJS is an interactive UI framework with D3.js for visualization of business data.
 
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
+## Examples
 
-### Compiles and minifies for production
-```
-yarn build
-```
+* Contours
 
-### Lints and fixes files
-```
-yarn lint
-```
+![](./src/assets/contours.png)
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+* Arc
+
+![](./src/assets/circle.png)
