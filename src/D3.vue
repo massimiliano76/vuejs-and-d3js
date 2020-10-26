@@ -10,6 +10,7 @@
     <v-row class="row align-center justify-center">
       <v-col class="col-lg-5 col-md-5 align-center justify-center" id="chart"></v-col>
       <v-col class="col-lg-5 col-md-5 align-center justify-center" id="chart2"></v-col>
+      <v-col class="col-lg-5 col-md-5 align-center justify-center" id="chart3"></v-col>
     </v-row>
   </v-container>
 </template>
@@ -23,19 +24,20 @@ export default {
   data() {
     return {
       gdp: [
-        {country: "USA", value: "100000000"},
-        {country: "China", value: "5000000"},
-        {country: "Japan", value: "4000000"},
-        {country: "Korea", value: "3000000"}
+        {country: "USA", value: "1000"},
+        {country: "China", value: "500"},
+        {country: "Japan", value: "400"},
+        {country: "Korea", value: "300"}
       ],
     }
   },
   mounted() {
-    // this.generateChart();
-    this.generateChart2();
+    // this.generateArcChart();
+    // this.generateContourChart();
+    this.generateBarChart();
   },
   methods: {
-    async generateChart() {
+    async generateArcChart() {
       console.log(this.gdp);
       const svg = d3.select('#chart')
           .append('svg')
@@ -81,7 +83,7 @@ export default {
           .attr("y", (d, i) => -(i + 1) * 25);
       g.attr("transform", "translate(200,150)");
     },
-    async generateChart2() {
+    async generateContourChart() {
       let data = Object.assign(
           await d3.tsv("/faithful.tsv",
               ({waiting: x, eruptions: y}) => ({x: +x, y: +y})),
@@ -153,10 +155,45 @@ export default {
           .attr("cy", d => y(d.y))
           .attr("r", 2)
       .on("mouseover", function (d) {
-        tooltip.html("You clicked at point (" + d.x + "," + d.y + "). Visit <a href='/'>details</a>")
-            .style("top", (d.y-10)+"px").style("left",(d.x+10)+"px");
+        tooltip
+            .html("You clicked at point (" + d.x + "," + d.y + "). Visit <a href='/'>details</a>")
+            .style("top", (d.y-10)+"px")
+            .style("left",(d.x+10)+"px");
+
         return tooltip.style('visibility', 'visible');
       })
+      ;
+    },
+    async generateBarChart() {
+      const margin = 35;
+      const width = 800 - 2 * margin;
+      const height = 500 - 2 * margin;
+      const svg = d3.select('#chart3')
+          .append('svg')
+          .attr('width', width)
+          .attr('height', height);
+      const chart = svg.append('g')
+          .attr('transform', `translate(${margin}, ${margin})`);
+      const yScale = d3.scaleLinear().range([height, 0]).domain([0, 1200]);
+      const xScale = d3.scaleBand().range([0, width]).domain(this.gdp.map((d) => d.country));
+      let tooltip = d3.select("body")
+          .append("div")
+          .style("class", "align-center")
+          .style("position", "absolute")
+          .style("z-index", "10")
+          .style("visibility", "hidden")
+          .style("background", "#699")
+          .text("");
+      chart.append('g').call(d3.axisRight(yScale));
+      chart.append('g').attr('transform', `translate(100, ${height}-200)`).call(d3.axisBottom(xScale));
+      chart.selectAll().data(this.gdp).enter().append('rect')
+          .attr('fill', '#66f')
+          .attr('x', (d) => xScale(d.country)+50)
+          .attr('y', (d) => yScale(d.value))
+          .attr('height', (d) => height - yScale(d.value))
+          .attr('width', xScale.bandwidth()/2)
+          .on('mouseover', function () {
+          })
       ;
     }
   }
