@@ -24,10 +24,10 @@ export default {
   data() {
     return {
       gdp: [
-        {country: "USA", value: "1000"},
-        {country: "China", value: "500"},
-        {country: "Japan", value: "400"},
-        {country: "Korea", value: "300"}
+        {country: "USA", value: "1000", population: "200"},
+        {country: "China", value: "500", population: "1500"},
+        {country: "Japan", value: "400", population: "130"},
+        {country: "Korea", value: "300", population: "60"}
       ],
     }
   },
@@ -166,34 +166,74 @@ export default {
     },
     async generateBarChart() {
       const margin = 35;
-      const width = 800 - 2 * margin;
-      const height = 500 - 2 * margin;
+      const width = 640 - 2 * margin;
+      const height = 480 - 2 * margin;
       const svg = d3.select('#chart3')
           .append('svg')
-          .attr('width', width)
-          .attr('height', height);
+          .attr('width', width+2*margin)
+          .attr('height', height+2*margin);
       const chart = svg.append('g')
-          .attr('transform', `translate(${margin}, ${margin})`);
-      const yScale = d3.scaleLinear().range([height, 0]).domain([0, 1200]);
+          .attr('transform', `translate(${margin}, -${margin})`);
+      const yScale = d3.scaleLinear().range([height, 50]).domain([0, 2000]);
       const xScale = d3.scaleBand().range([0, width]).domain(this.gdp.map((d) => d.country));
-      let tooltip = d3.select("body")
-          .append("div")
-          .style("class", "align-center")
-          .style("position", "absolute")
-          .style("z-index", "10")
-          .style("visibility", "hidden")
-          .style("background", "#699")
-          .text("");
+      // let tooltip = d3.select("body")
+      //     .append("div")
+      //     .style("class", "align-center")
+      //     .style("position", "absolute")
+      //     .style("z-index", "10")
+      //     .style("visibility", "hidden")
+      //     .style("background", "#699")
+      //     .text("");
       chart.append('g').call(d3.axisRight(yScale));
-      chart.append('g').attr('transform', `translate(100, ${height}-200)`).call(d3.axisBottom(xScale));
+      chart.append('g').attr('x', margin/2).call(d3.axisTop(xScale))
+          .attr('transform', `translate(0, ${height+margin})`);
+      svg.append('text').attr('x', width/2 + margin/2).attr('y', height+margin).attr('text-anchor', 'middle').text('Countries');
+      svg.append('text').attr('x',-height/2-margin/2).attr('y', margin/2.5).attr('text-anchor', 'middle').attr('transform', 'rotate(-90)').text('GDP');
       chart.selectAll().data(this.gdp).enter().append('rect')
-          .attr('fill', '#66f')
-          .attr('x', (d) => xScale(d.country)+50)
+          .attr('fill', '#f5a80f')
+          .attr('x', (d) => xScale(d.country) + margin)
           .attr('y', (d) => yScale(d.value))
           .attr('height', (d) => height - yScale(d.value))
-          .attr('width', xScale.bandwidth()/2)
-          .on('mouseover', function () {
-          })
+          .attr('width', xScale.bandwidth()/4)
+          .on('mouseover', function (actual, i) {
+            d3.select(this).attr('opacity', 0.5);
+            const y = yScale(i.value);
+            console.log(y);
+            console.log(actual);
+            chart.append('line')
+                .attr('x1', 0)
+                .attr('y1', y)
+                .attr('x2', width)
+                .attr('y2', y)
+                .attr('stroke', 'orange')
+                .attr('id', 'limit');
+          }).on('mouseout', function () {
+            d3.select(this).attr('opacity', 1.0);
+            chart.selectAll('#limit').remove();
+      })
+      ;
+      chart.selectAll().data(this.gdp).enter().append('rect')
+          .attr('fill', '#0e3e0e')
+          .attr('x', (d) => xScale(d.country)+2*margin)
+          .attr('y', (d) => yScale(d.population))
+          .attr('height', (d) => height - yScale(d.population))
+          .attr('width', xScale.bandwidth()/4)
+          .on('mouseover', function (actual, i) {
+            d3.select(this).attr('opacity', 0.5);
+            const y = yScale(i.population);
+            console.log(y);
+            console.log(actual);
+            chart.append('line')
+                .attr('x1', 0)
+                .attr('y1', y)
+                .attr('x2', width)
+                .attr('y2', y)
+                .attr('stroke', '#0e3e0e')
+                .attr('id', 'limit');
+          }).on('mouseout', function () {
+        d3.select(this).attr('opacity', 1.0);
+        chart.selectAll('#limit').remove();
+      })
       ;
     }
   }
