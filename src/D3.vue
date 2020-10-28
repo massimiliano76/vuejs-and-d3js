@@ -61,13 +61,13 @@ export default {
           .attr("d", arc)
           .attr("fill", (d, i) => color(i))
           .attr("stroke", "#FFF")
-          .on("mouseenter", function() {
+          .on("mouseenter", function () {
             d3.select(this)
                 .transition()
                 .duration(200)
                 .attr("opacity", 0.5);
           })
-          .on("mouseout", function() {
+          .on("mouseout", function () {
             d3.select(this)
                 .transition()
                 .duration(200)
@@ -124,7 +124,7 @@ export default {
           .thresholds(30)(data);
       console.log(contours);
 
-      const svg = d3.select("#chart2").append("svg").attr("viewBox", [0,0,width,height]);
+      const svg = d3.select("#chart2").append("svg").attr("viewBox", [0, 0, width, height]);
       svg.append("g").call(xAxis);
       svg.append("g").call(yAxis);
       svg.append("g")
@@ -154,14 +154,14 @@ export default {
           .attr("cx", d => x(d.x))
           .attr("cy", d => y(d.y))
           .attr("r", 2)
-      .on("mouseover", function (d) {
-        tooltip
-            .html("You clicked at point (" + d.x + "," + d.y + "). Visit <a href='/'>details</a>")
-            .style("top", (d.y-10)+"px")
-            .style("left",(d.x+10)+"px");
+          .on("mouseover", function (d) {
+            tooltip
+                .html("You clicked at point (" + d.x + "," + d.y + "). Visit <a href='/'>details</a>")
+                .style("top", (d.y - 10) + "px")
+                .style("left", (d.x + 10) + "px");
 
-        return tooltip.style('visibility', 'visible');
-      })
+            return tooltip.style('visibility', 'visible');
+          })
       ;
     },
     async generateBarChart() {
@@ -170,8 +170,8 @@ export default {
       const height = 480 - 2 * margin;
       const svg = d3.select('#chart3')
           .append('svg')
-          .attr('width', width+2*margin)
-          .attr('height', height+2*margin);
+          .attr('width', width + 2 * margin)
+          .attr('height', height + 2 * margin);
       const chart = svg.append('g')
           .attr('transform', `translate(${margin}, -${margin})`);
       const yScale = d3.scaleLinear().range([height, 50]).domain([0, 2000]);
@@ -185,56 +185,67 @@ export default {
       //     .style("background", "#699")
       //     .text("");
       chart.append('g').call(d3.axisRight(yScale));
-      chart.append('g').attr('x', margin/2).call(d3.axisTop(xScale))
-          .attr('transform', `translate(0, ${height+margin})`);
-      svg.append('text').attr('x', width/2 + margin/2).attr('y', height+margin).attr('text-anchor', 'middle').text('Countries');
-      svg.append('text').attr('x',-height/2-margin/2).attr('y', margin/2.5).attr('text-anchor', 'middle').attr('transform', 'rotate(-90)').text('GDP');
+      chart.append('g').attr('x', margin / 2).call(d3.axisTop(xScale))
+          .attr('transform', `translate(0, ${height + margin})`);
+      svg.append('text').attr('x', width / 2 + margin / 2).attr('y', height + margin).attr('text-anchor', 'middle').text('Countries');
+      svg.append('text').attr('x', -height / 2 - margin / 2).attr('y', margin / 2.5).attr('text-anchor', 'middle').attr('transform', 'rotate(-90)').text('GDP');
       chart.selectAll().data(this.gdp).enter().append('rect')
           .attr('fill', '#f5a80f')
           .attr('x', (d) => xScale(d.country) + margin)
           .attr('y', (d) => yScale(d.value))
           .attr('height', (d) => height - yScale(d.value))
-          .attr('width', xScale.bandwidth()/4)
+          .attr('width', xScale.bandwidth() / 4)
           .on('mouseover', function (actual, i) {
-            d3.select(this).attr('opacity', 0.5);
+            d3.select(this).transition().duration(500).attr('opacity', 0.5);
             const y = yScale(i.value);
             console.log(y);
             console.log(actual);
-            chart.append('line')
-                .attr('x1', 0)
-                .attr('y1', y)
-                .attr('x2', width)
-                .attr('y2', y)
-                .attr('stroke', 'orange')
-                .attr('id', 'limit');
+            // chart.append('line')
+            //     .attr('x1', 0)
+            //     .attr('y1', y)
+            //     .attr('x2', width)
+            //     .attr('y2', y)
+            //     .attr('stroke', 'orange')
+            //     .attr('id', 'limit');
+            chart.append('text')
+                .attr('x', xScale(i.country)+margin)
+                .attr('y', y-margin/2)
+                .attr('id', 'text2')
+                .html(`${i.country}'s GDP: ${i.value}`);
           }).on('mouseout', function () {
-            d3.select(this).attr('opacity', 1.0);
-            chart.selectAll('#limit').remove();
+        d3.select(this).attr('opacity', 1.0);
+        // chart.selectAll('#limit').remove();
+        chart.selectAll('#text2').remove();
       })
       ;
       chart.selectAll().data(this.gdp).enter().append('rect')
           .attr('fill', '#0e3e0e')
-          .attr('x', (d) => xScale(d.country)+2*margin)
+          .attr('x', (d) => xScale(d.country) + 2 * margin)
           .attr('y', (d) => yScale(d.population))
           .attr('height', (d) => height - yScale(d.population))
-          .attr('width', xScale.bandwidth()/4)
+          .attr('width', xScale.bandwidth() / 4)
           .on('mouseover', function (actual, i) {
-            d3.select(this).attr('opacity', 0.5);
+            d3.select(this).transition().duration(500).attr('opacity', 0.5);
             const y = yScale(i.population);
             console.log(y);
             console.log(actual);
-            chart.append('line')
-                .attr('x1', 0)
-                .attr('y1', y)
-                .attr('x2', width)
-                .attr('y2', y)
-                .attr('stroke', '#0e3e0e')
-                .attr('id', 'limit');
+            // chart.append('line')
+            //     .attr('x1', 0)
+            //     .attr('y1', y)
+            //     .attr('x2', width)
+            //     .attr('y2', y)
+            //     .attr('stroke', '#0e3e0e')
+            //     .attr('id', 'limit');
+            chart.append('text')
+                .attr('x', xScale(i.country)+margin)
+                .attr('y', y-margin/2)
+                .attr('id', 'text1')
+                .html(`${i.country}'s population: ${i.population}`);
           }).on('mouseout', function () {
-        d3.select(this).attr('opacity', 1.0);
-        chart.selectAll('#limit').remove();
-      })
-      ;
+            d3.select(this).attr('opacity', 1.0);
+            // chart.selectAll('#limit').remove();
+            chart.selectAll('#text1').remove();
+          });
     }
   }
 }
