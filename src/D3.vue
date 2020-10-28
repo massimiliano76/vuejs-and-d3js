@@ -3,7 +3,7 @@
     <v-row class="row">
       <v-col cols="4" class="d-flex align-center justify-center">
         <div class="pa-2">
-          <h3 class="pb-2">GDP charts</h3>
+          <h3 class="pb-2" id="title">GDP charts</h3>
         </div>
       </v-col>
     </v-row>
@@ -11,6 +11,7 @@
       <v-col class="col-lg-5 col-md-5 align-center justify-center" id="chart"></v-col>
       <v-col class="col-lg-5 col-md-5 align-center justify-center" id="chart2"></v-col>
       <v-col class="col-lg-5 col-md-5 align-center justify-center" id="chart3"></v-col>
+      <v-col class="col-md-12 col-lg-12 align-center justify-center" id="chart4"></v-col>
     </v-row>
   </v-container>
 </template>
@@ -28,15 +29,28 @@ export default {
         {country: "China", value: "500", population: "1500"},
         {country: "Japan", value: "400", population: "130"},
         {country: "Korea", value: "300", population: "60"}
-      ],
+      ]
     }
   },
   mounted() {
     // this.generateArcChart();
     // this.generateContourChart();
-    this.generateBarChart();
+    // this.generateBarChart();
+    this.generateLineChart();
   },
   methods: {
+    generateTimeSeries() {
+      let data = [];
+      let start = new Date(2020, 1, 1);
+      let duration = 200;
+      for (var i = 0; i < duration; i++) {
+        let d = start.getTime() + i * 24 * 60 * 60 * 1000;
+        let v = Math.random() * 128 % 100;
+        v *= 1.0;
+        data.push({date: new Date(d).toDateString(), value: v.toString()})
+      }
+      return data;
+    },
     async generateArcChart() {
       console.log(this.gdp);
       const svg = d3.select('#chart')
@@ -176,14 +190,6 @@ export default {
           .attr('transform', `translate(${margin}, -${margin})`);
       const yScale = d3.scaleLinear().range([height, 50]).domain([0, 2000]);
       const xScale = d3.scaleBand().range([0, width]).domain(this.gdp.map((d) => d.country));
-      // let tooltip = d3.select("body")
-      //     .append("div")
-      //     .style("class", "align-center")
-      //     .style("position", "absolute")
-      //     .style("z-index", "10")
-      //     .style("visibility", "hidden")
-      //     .style("background", "#699")
-      //     .text("");
       chart.append('g').call(d3.axisRight(yScale));
       chart.append('g').attr('x', margin / 2).call(d3.axisTop(xScale))
           .attr('transform', `translate(0, ${height + margin})`);
@@ -208,8 +214,8 @@ export default {
             //     .attr('stroke', 'orange')
             //     .attr('id', 'limit');
             chart.append('text')
-                .attr('x', xScale(i.country)+margin)
-                .attr('y', y-margin/2)
+                .attr('x', xScale(i.country) + margin)
+                .attr('y', y - margin / 2)
                 .attr('id', 'text2')
                 .html(`${i.country}'s GDP: ${i.value}`);
           }).on('mouseout', function () {
@@ -237,15 +243,99 @@ export default {
             //     .attr('stroke', '#0e3e0e')
             //     .attr('id', 'limit');
             chart.append('text')
-                .attr('x', xScale(i.country)+margin)
-                .attr('y', y-margin/2)
+                .attr('x', xScale(i.country) + margin)
+                .attr('y', y - margin / 2)
                 .attr('id', 'text1')
                 .html(`${i.country}'s population: ${i.population}`);
           }).on('mouseout', function () {
-            d3.select(this).attr('opacity', 1.0);
-            // chart.selectAll('#limit').remove();
-            chart.selectAll('#text1').remove();
+        d3.select(this).attr('opacity', 1.0);
+        // chart.selectAll('#limit').remove();
+        chart.selectAll('#text1').remove();
+      });
+    },
+    async generateLineChart() {
+      let data = this.generateTimeSeries();
+      let margin = 35;
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+      const svg = d3.select('#chart4')
+          .append('svg')
+          .attr('width', width + 2 * margin)
+          .attr('height', height + 2 * margin);
+      const chart = svg.append('g')
+          .attr('transform', `translate(${margin}, -${margin})`);
+      const yScale = d3.scaleLinear().range([height, 50]).domain([0, 100]);
+      const xScale = d3.scaleBand().range([0, width]).domain(data.map((d) => d.date));
+      chart.append('g').call(d3.axisLeft(yScale));
+      // chart.append('g')
+      //     .attr('x', margin / 2)
+      //     .call(d3.axisTop(xScale))
+      //     .attr('transform', `translate(0, ${height})`)
+      //     .selectAll('text')
+      //     .attr('text-anchor', 'end')
+      //     .attr("dx", "-.8em")
+      //     .attr("dy", ".15em")
+      //     .attr('transform', 'rotate(-40)');
+      chart.append("path")
+          .datum(data)
+          .attr("fill", "none")
+          .attr("stroke", "#5d1313")
+          .attr("stroke-width", 1.5)
+          .attr("d", d3.line()
+              .x(function (d) {
+                return xScale(d.date)
+              })
+              .y(function (d) {
+                return yScale(d.value)
+              })
+          );
+      // Add the area
+      chart.append("path")
+          .datum(data)
+          .attr("fill", "#b38969")
+          .attr("fill-opacity", .3)
+          .attr("stroke", "none")
+          .attr("d", d3.area()
+              .x(function (d) {
+                return xScale(d.date)
+              })
+              .y0(height)
+              .y1(function (d) {
+                return yScale(d.value)
+              })
+          );
+      let tooltip = d3.select("body")
+          .append("div")
+          .style("class", "align-center")
+          .style("position", "absolute")
+          .style("z-index", "10")
+          .style("visibility", "hidden")
+          .style("background", "#99927c")
+          .attr("id", "tooltip")
+          .text("");
+      chart.selectAll("myCircles")
+          .data(data)
+          .enter()
+          .append("circle")
+          .attr("fill", "red")
+          .attr("stroke", "none")
+          .attr("cx", function (d) {
+            return xScale(d.date)
+          })
+          .attr("cy", function (d) {
+            return yScale(d.value)
+          })
+          .attr("r", 3).on('mouseenter', function (d, i) {
+            tooltip
+                .html(`Price at ${i.date} is ${Math.round(i.value)}$`)
+                .style("top", (d.y - 10) + "px")
+                .style("left", (d.x + 10) + "px");
+
+            return tooltip.style('visibility', 'visible');
+          }).on('mouseout', function () {
+            chart.selectAll('#tooltip').remove();
           });
+      d3.select('#title').text('Stock prices');
     }
   }
 }
